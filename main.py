@@ -70,3 +70,17 @@ async def test_model_classification(text: str)-> dict:
         }
 
         return response
+    
+# test cleaning text
+@app.post("/test-cleaning-text")
+def test_cleaning_text(text: str)-> dict:
+
+    if not text:
+        raise HTTPException(status_code=400, detail="text perlu dimasukan")
+
+    response = {
+        'text-mentah' : text,
+        'cleaning' : CleaningText().remove_all(text)
+    }
+
+    return response
