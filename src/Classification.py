@@ -26,3 +26,9 @@ class KNNClassification:
             return 'ui/ux'
         else:
             return 'tidak ada label terdaftar'
+        
+    def probabilitas_score_labels(self, probabilitas: list)-> dict:
+        # nama kunci untuk tiap indeks
+        keys = ["data sain", "progammer", "sistem cerdas", "ui/ux"]
+
+        return {keys[i]: probabilitas[i] * 100 for i in range(len(probabilitas))}

@@ -56,7 +56,7 @@ async def test_model_classification(text: str)-> dict:
             'massage' : 'sukses memprediksi label',
             'data' : {
                 'label-prediksi': knn.label_to_text(predicted_label),
-                'probabilitas': probabilitas
+                'probabilitas': knn.probabilitas_score_labels(probabilitas)
             }
         }
 
