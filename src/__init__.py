@@ -1,3 +1,8 @@
 from .CleaningText import CleaningText
+from .Classification import KNNClassification
 
-__all__ = ["CleaningText"]
+lib = [
+    "CleaningText",
+    "KNNClassification"
+]
+__all__ = lib
