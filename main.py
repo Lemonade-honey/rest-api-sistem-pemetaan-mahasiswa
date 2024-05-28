@@ -1,13 +1,17 @@
+from typing import Union
+from fastapi import FastAPI
+
 from src import CleaningText
 
-def main():
-    text = "ini text  yang harus a dibersihkan *kan"
-    
-    cleaning = CleaningText()
+app = FastAPI()
 
-    bersih = cleaning.remove_all(text)
+# Index Root Project
+@app.get("/")
+def index_root()-> dict:
 
-    print(bersih)
+    response = {
+        'server' : 'success connect',
+        'status' : 200
+    }
 
-if __name__ == "__main__":
-    main()
+    return response
