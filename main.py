@@ -50,7 +50,7 @@ async def test_model_classification(text: str)-> dict:
 
         knn = KNNClassification(knn_model, vectorizer)
 
-        predicted_label, probabilitas = knn.predict_label(text)
+        predicted_label, probabilitas = knn.predict_label(CleaningText().remove_all(text))
 
         response = {
             'massage' : 'sukses memprediksi label',
