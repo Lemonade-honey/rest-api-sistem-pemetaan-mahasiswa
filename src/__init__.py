@@ -1,8 +1,10 @@
 from .CleaningText import CleaningText
 from .Classification import KNNClassification
+from .Extract import ExtractPdf
 
 lib = [
     "CleaningText",
-    "KNNClassification"
+    "KNNClassification",
+    "ExtractPdf"
 ]
 __all__ = lib
