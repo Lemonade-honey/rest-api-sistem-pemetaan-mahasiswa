@@ -2,7 +2,7 @@ from typing import Union
 from fastapi import FastAPI, HTTPException
 import joblib
 
-from src import CleaningText, KNNClassification
+from src import CleaningText, KNNClassification, ExtractPdf
 from model import File
 from request import ValidateType
 
@@ -81,6 +81,32 @@ def test_cleaning_text(text: str)-> dict:
     response = {
         'text-mentah' : text,
         'cleaning' : CleaningText().remove_all(text)
+    }
+
+    return response
+
+# test reading file pdf
+@app.get("/test-reading")
+def test_reading_file():
+    file_pdf = "sample/pdf/docs-1.pdf"
+
+    text = CleaningText().remove_all(ExtractPdf().extract_pdf_to_text(file_pdf))
+
+    # loaded model
+    knn_model = joblib.load('knn_classification_model/knn_classification_model.pkl')
+    vectorizer = joblib.load('knn_classification_model/tfidf_fit_transform.pkl')
+
+    knn = KNNClassification(knn_model, vectorizer)
+
+    predicted_label, probabilitas = knn.predict_label(text)
+
+    response = {
+        'massage' : 'sukses memprediksi label',
+        'data' : {
+            'label-prediksi': knn.label_to_text(predicted_label),
+            'probabilitas': knn.probabilitas_score_labels(probabilitas),
+            'text-mentah' : text
+        }
     }
 
     return response
