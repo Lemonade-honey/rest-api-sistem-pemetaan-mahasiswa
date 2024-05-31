@@ -114,7 +114,7 @@ def test_reading_eksternal(path: str):
         raise HTTPException(status_code=404, detail="file not found")
 
 
-# test reading file pdf
+# test classification file pdf
 @app.get("/test-reading-classification")
 def test_reading_file():
     file_pdf = "sample/pdf/docs-1.pdf"
@@ -139,3 +139,54 @@ def test_reading_file():
     }
 
     return response
+
+# test classification eksternal
+@app.post("/classification-eksternal")
+def classification_dokumen(file_path: str):
+    # Validasi data
+    if not file_path:
+        raise HTTPException(status_code=400, detail="No files provided")
+    
+    # validasi tipe file
+    ValidateType(['.pdf']).validate_data(file_path)
+
+    try:
+        # Mendownload file PDF
+        response = requests.get(file_path)
+        response.raise_for_status()
+
+        # Memeriksa apakah respons sukses
+        if response.status_code == 200:
+            # Membaca teks dari dokumen PDF
+            extracted_text = ExtractPdf().extract_pdf_to_text(BytesIO(response.content))
+
+            # cleaning text dokumen
+            text = CleaningText().remove_all(extracted_text)
+            
+            # loaded model
+            knn_model = joblib.load('knn_classification_model/knn_classification_model.pkl')
+            vectorizer = joblib.load('knn_classification_model/tfidf_fit_transform.pkl')
+
+            knn = KNNClassification(knn_model, vectorizer)
+
+            predicted_label, probabilitas = knn.predict_label(text)
+
+            response = {
+                'status' : 'sukses',
+                'massage' : 'sukses memprediksi label',
+                'data' : {
+                    'label-prediksi': knn.label_to_text(predicted_label),
+                    'probabilitas': knn.probabilitas_score_labels(probabilitas),
+                }
+            }
+
+            return response
+        else:
+            response = {
+                'status' : 'gagal',
+                'massage' : 'gagal dalam ekstrak file dokumen'
+            }
+
+            return response
+    except requests.exceptions.HTTPError:
+        raise HTTPException(status_code=404, detail="file not found")
