@@ -1,6 +1,8 @@
+from io import BytesIO
 from typing import Union
 from fastapi import FastAPI, HTTPException
 import joblib
+import requests
 
 from src import CleaningText, KNNClassification, ExtractPdf
 from model import File
@@ -85,8 +87,35 @@ def test_cleaning_text(text: str)-> dict:
 
     return response
 
+
+@app.post("/test-reading-eksternal")
+def test_reading_eksternal(path: str):
+    if not path:
+        raise HTTPException(status_code=400, detail="No files provided")
+    
+    # validasi tipe file
+    ValidateType(['.pdf']).validate_data(path)
+
+    try:
+        # Mendownload file PDF
+        response = requests.get(path)
+        response.raise_for_status()
+
+        # Memeriksa apakah respons sukses
+        if response.status_code == 200:
+            # Membaca teks dari dokumen PDF
+            extracted_text = ExtractPdf().extract_pdf_to_text(BytesIO(response.content))
+            
+            # Menampilkan teks yang diekstrak
+            return extracted_text
+        else:
+            return "gagal dalam ekstrak teks"
+    except requests.exceptions.HTTPError:
+        raise HTTPException(status_code=404, detail="file not found")
+
+
 # test reading file pdf
-@app.get("/test-reading")
+@app.get("/test-reading-classification")
 def test_reading_file():
     file_pdf = "sample/pdf/docs-1.pdf"
 

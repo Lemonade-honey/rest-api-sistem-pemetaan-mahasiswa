@@ -16,3 +16,8 @@ class ValidateType:
         if invalid_files:
             print(f"Invalid file types: {', '.join(invalid_files)}")
             raise HTTPException(status_code=400, detail=f"Invalid file types: {', '.join(invalid_files)}")
+        
+    def validate_data(self, file: str):
+        if not self.is_valid_type(file):
+            print(f"Invalid file types: {file}")
+            raise HTTPException(status_code=400, detail=f"Invalid file types: {file}")
