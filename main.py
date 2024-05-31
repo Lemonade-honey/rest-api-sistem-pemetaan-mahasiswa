@@ -119,7 +119,7 @@ def test_reading_eksternal(path: str):
 def test_reading_file():
     file_pdf = "sample/pdf/docs-1.pdf"
 
-    text = CleaningText().remove_all(ExtractPdf().extract_pdf_to_text(file_pdf))
+    text = CleaningText().remove_all(ExtractPdf().extract_pdf_to_text(file_pdf, 1, 2))
 
     # loaded model
     knn_model = joblib.load('knn_classification_model/knn_classification_model.pkl')
