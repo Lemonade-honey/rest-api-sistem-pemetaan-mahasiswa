@@ -158,7 +158,7 @@ def classification_dokumen(file_path: str):
         # Memeriksa apakah respons sukses
         if response.status_code == 200:
             # Membaca teks dari dokumen PDF
-            extracted_text = ExtractPdf().extract_pdf_to_text(BytesIO(response.content))
+            extracted_text = ExtractPdf().extract_pdf_to_text(BytesIO(response.content), start_page=0, end_page=10)
 
             # cleaning text dokumen
             text = CleaningText().remove_all(extracted_text)
