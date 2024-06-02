@@ -2,11 +2,9 @@ from io import BytesIO
 import os
 import random
 import shutil
-from typing import Union
-import uuid
 from fastapi import FastAPI, HTTPException, File, Request, UploadFile
-from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.responses import FileResponse
 import joblib
 import requests
 
@@ -257,7 +255,7 @@ async def delete_file_path(request: Request):
     
     try:
         body_request = await request.json()
-        
+
         # mengambil 7 digit awal text
         body_request = body_request[:7]
         print(body_request)
@@ -273,3 +271,15 @@ async def delete_file_path(request: Request):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+
+# menampilkan isi file
+@app.get('/library')
+async def show_document(folder_path: str):
+    if not folder_path:
+        raise HTTPException(status_code=403, detail="File Path tidak ada")
+    
+    if os.path.exists(f"storages/{folder_path}"):
+        return FileResponse(f"storages/{folder_path}", media_type='application/pdf')
+    else:
+        raise HTTPException(status_code=404, detail="Folder Path Tidak ditemukan")
