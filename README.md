@@ -35,3 +35,23 @@ sebuah aplikasi untuk mengklasifikasikan text menjadi 4 kategori yaitu, sistem c
         ```cmd
         mklink /J "F:\00.Project\0.Skripsi\skripsi-project\skripsi-model\Storage\" "F:\00.Project\0.Skripsi\skripsi-project\skripsi-web-model\storage\app\public\"
         ```
+
+## Route
+
+1. Upload File
+    ```
+    /upload-file
+    ```
+    * `request` berupa file
+    * pada file upload, hanya boleh diperbolehkan `.pdf`
+    * return `responsenya` merupakan nama folder, berupa 7 digit nomer acak
+    * file hasil upload ditaruh di folder storages
+
+
+2. Delete File
+    ```
+    /delete-file
+    ```
+    * `request` berupa sebuah `body`, dan isinya harus hanya sebuah `angka nama folder`
+    * akan menghapus sesuai dengan nama folder yang ada di body request
+    * return `responsenya` berupa bool `True`
