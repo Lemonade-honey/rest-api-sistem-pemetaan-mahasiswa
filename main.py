@@ -1,9 +1,10 @@
 from io import BytesIO
 import os
+import random
 import shutil
 from typing import Union
 import uuid
-from fastapi import FastAPI, HTTPException, File, UploadFile
+from fastapi import FastAPI, HTTPException, File, Request, UploadFile
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 import joblib
@@ -225,20 +226,24 @@ def classification_dokumen(file_path: str):
 
 # Upload File Dokumen
 @app.post("/upload-file")
-def upload_file(file: UploadFile):
+async def upload_file(file: UploadFile):
     if file.content_type != "application/pdf":
         raise HTTPException(status_code=400, detail="File type is not PDF")
     
     try:
-        # Generate unique filename
-        new_filename = str(uuid.uuid4()) + ".pdf"
+        # Generate random folder name
+        folder_name = str(random.randint(1000000, 9999999))
+        folder_path = os.path.join("storages", folder_name)
+        
+        # Create the folder if it doesn't exist
+        os.makedirs(folder_path, exist_ok=True)
         
         # Define file location
-        file_location = os.path.join("storages", new_filename)
+        file_location = os.path.join(folder_path, file.filename)
         with open(file_location, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
         
-        return JSONResponse(content={"filename": new_filename}, status_code=200)
+        return folder_name
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -246,15 +251,20 @@ def upload_file(file: UploadFile):
 
 # Delete File Folder
 @app.delete("/delete-file")
-def delete_file_path(file_path: str):
-    if not file_path:
-        raise HTTPException(status_code=403, detail="File Path tidak ada")
+async def delete_file_path(request: Request):
+    if not request:
+        raise HTTPException(status_code=403, detail="id File Path tidak ada")
     
     try:
-        if os.path.exists(f"storages/{file_path}"):
-            # hapus path folder
-            os.remove(f"storages/{file_path}")
-            return JSONResponse(content={"massage" : "berhasil menghapus folder path"}, status_code=201)
+        body_request = await request.json()
+        print(body_request)
+
+        # Periksa apakah folder tersebut ada
+        if os.path.exists(f"storages/{body_request}"):
+            # Menghapus folder beserta semua isinya
+            shutil.rmtree(f"storages/{body_request}")
+
+            return True
         else:
             raise HTTPException(status_code=400, detail="Folder Path Tidak ditemukan")
         
