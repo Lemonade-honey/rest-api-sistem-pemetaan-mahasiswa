@@ -1,6 +1,10 @@
 from io import BytesIO
+import os
+import shutil
 from typing import Union
-from fastapi import FastAPI, HTTPException
+import uuid
+from fastapi import FastAPI, HTTPException, File, UploadFile
+from fastapi.responses import JSONResponse
 import joblib
 import requests
 
@@ -113,6 +117,20 @@ def test_reading_eksternal(path: str):
     except requests.exceptions.HTTPError:
         raise HTTPException(status_code=404, detail="file not found")
 
+@app.post("/test-reading-internal")
+def test_reading_internal(path: str):
+    if not path:
+        raise HTTPException(status_code=400, detail="No files provided")
+    
+    # validasi tipe file
+    ValidateType(['.pdf']).validate_data(path)
+
+    try:
+        text = CleaningText().remove_all(ExtractPdf().extract_pdf_to_text(f"storages/{path}", 1, 2))
+
+        return text
+    except requests.exceptions.HTTPError:
+        raise HTTPException(status_code=404, detail="file not found")
 
 # test classification file pdf
 @app.get("/test-reading-classification")
@@ -190,3 +208,42 @@ def classification_dokumen(file_path: str):
             return response
     except requests.exceptions.HTTPError:
         raise HTTPException(status_code=404, detail="file not found")
+    
+
+# Upload File Dokumen
+@app.post("/upload-file")
+def upload_file(file: UploadFile):
+    if file.content_type != "application/pdf":
+        raise HTTPException(status_code=400, detail="File type is not PDF")
+    
+    try:
+        # Generate unique filename
+        new_filename = str(uuid.uuid4()) + ".pdf"
+        
+        # Define file location
+        file_location = os.path.join("storages", new_filename)
+        with open(file_location, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        return JSONResponse(content={"filename": new_filename}, status_code=200)
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+
+# Delete File Folder
+@app.delete("/delete-file")
+def delete_file_path(file_path: str):
+    if not file_path:
+        raise HTTPException(status_code=403, detail="File Path tidak ada")
+    
+    try:
+        if os.path.exists(f"storages/{file_path}"):
+            # hapus path folder
+            os.remove(f"storages/{file_path}")
+            return JSONResponse(content={"massage" : "berhasil menghapus folder path"}, status_code=201)
+        else:
+            raise HTTPException(status_code=400, detail="Folder Path Tidak ditemukan")
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
