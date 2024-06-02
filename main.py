@@ -243,7 +243,7 @@ async def upload_file(file: UploadFile):
         with open(file_location, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
         
-        return folder_name
+        return f"{folder_name}/{file.filename}"
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -257,6 +257,9 @@ async def delete_file_path(request: Request):
     
     try:
         body_request = await request.json()
+        
+        # mengambil 7 digit awal text
+        body_request = body_request[:7]
         print(body_request)
 
         # Periksa apakah folder tersebut ada
