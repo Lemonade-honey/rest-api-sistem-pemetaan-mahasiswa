@@ -232,9 +232,12 @@ def classification_internal(folder_file_path: str):
     # validasi tipe file
     ValidateType(['.pdf']).validate_data(folder_file_path)
 
+    if not os.path.exists(f"storages/document/{folder_file_path}"):
+        raise HTTPException(status_code=404, detail="File target tidak valid atau tidak ditemukan")
+    
     try:
         # Membaca teks dari dokumen PDF
-        extracted_text = ExtractPdf().extract_pdf_to_text(f"storages/{folder_file_path}", start_page=0, end_page=10)
+        extracted_text = ExtractPdf().extract_pdf_to_text(f"storages/document/{folder_file_path}", start_page=0, end_page=10)
 
         # cleaning text dokumen
         text = CleaningText().remove_all(extracted_text)
@@ -262,7 +265,7 @@ def classification_internal(folder_file_path: str):
 
 
 # Upload File Dokumen
-@app.post("/upload-file")
+@app.post("/upload-file-document")
 async def upload_file(file: UploadFile):
     if file.content_type != "application/pdf":
         raise HTTPException(status_code=400, detail="File type is not PDF")
@@ -270,7 +273,7 @@ async def upload_file(file: UploadFile):
     try:
         # Generate random folder name
         folder_name = str(random.randint(1000000, 9999999))
-        folder_path = os.path.join("storages", folder_name)
+        folder_path = os.path.join("storages/document", folder_name)
         
         # Create the folder if it doesn't exist
         os.makedirs(folder_path, exist_ok=True)
@@ -287,7 +290,7 @@ async def upload_file(file: UploadFile):
     
 
 # Delete File Folder
-@app.delete("/delete-file")
+@app.delete("/revert-file-document")
 async def delete_file_path(request: Request):
     if not request:
         raise HTTPException(status_code=403, detail="id File Path tidak ada")
@@ -300,9 +303,9 @@ async def delete_file_path(request: Request):
         print(body_request)
 
         # Periksa apakah folder tersebut ada
-        if os.path.exists(f"storages/{body_request}"):
+        if os.path.exists(f"storages/document/{body_request}"):
             # Menghapus folder beserta semua isinya
-            shutil.rmtree(f"storages/{body_request}")
+            shutil.rmtree(f"storages/document/{body_request}")
 
             return True
         else:
@@ -314,15 +317,19 @@ async def delete_file_path(request: Request):
 
 # menampilkan isi file
 @app.get('/library')
-async def show_document(folder_path: str):
+async def show_document(folder_path: str, type: str = None):
     if not folder_path:
         raise HTTPException(status_code=403, detail="File Path tidak ada")
     
-    if os.path.exists(f"storages/{folder_path}"):
-        return FileResponse(f"storages/{folder_path}", media_type='application/pdf')
-    else:
-        raise HTTPException(status_code=404, detail="Folder Path Tidak ditemukan")
-    
+    if type == 'document' or not type:
+        if os.path.exists(f"storages/document/{folder_path}"):
+            return FileResponse(f"storages/document/{folder_path}", media_type='application/pdf')
+    if type == 'transkip' :
+        if os.path.exists(f"storages/transkip/{folder_path}"):
+            return FileResponse(f"storages/transkip/{folder_path}", media_type='application/pdf')
+        
+    raise HTTPException(status_code=404, detail="Folder Path Tidak ditemukan")
+        
 # upload file transkip
 @app.post('/upload-file-transkip')
 async def upload_file_transkip(file: UploadFile):
