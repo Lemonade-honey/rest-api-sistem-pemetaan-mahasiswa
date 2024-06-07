@@ -5,7 +5,7 @@ import shutil
 import uuid
 from fastapi import FastAPI, HTTPException, File, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.responses import FileResponse
+from starlette.responses import FileResponse, Response
 import joblib
 import requests
 
@@ -401,7 +401,11 @@ def transkip_nilai_scores(folder_file_path: str):
 
         extract_table = ExtractPdf().extract_table_transkip(f"storages/transkip/{folder_file_path}")
 
-        extract_table, last_row = ExtractPdf().cleaning_table(extract_table)
+        extract_table, last_row, first_row = ExtractPdf().cleaning_table(extract_table)
+
+        # validate struktur
+        if not ExtractPdf().validate_transkip(first_row):
+            raise HTTPException(status_code=406, detail="Struktur file tidak sesuai")
 
         # label scores
         nilai_transkip = ExtractPdf().get_nilai_transkip(extract_table)
@@ -414,6 +418,7 @@ def transkip_nilai_scores(folder_file_path: str):
             'transkip-label-score' : nilai_transkip,
             'akademik-scores' : akademik_scores
         }
+    
     except Exception as ex:
         print(ex)
-        return "tidak bisa"
+        raise HTTPException(status_code=506, detail="server error")

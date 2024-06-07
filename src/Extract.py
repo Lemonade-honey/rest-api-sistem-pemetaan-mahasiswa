@@ -26,14 +26,46 @@ class ExtractPdf:
     
     # membersihkan data table yang tidak dibutuhkan
     def cleaning_table(self, table: list)-> tuple:
+
+        first_row = table[0:2]
         # menghapus 2 baris awal table
         del table[0:2]
 
         # hapus baris akhir
-        last_table = table.pop()
+        last_row = table.pop()
 
-        return table, last_table
+        return table, last_row, first_row
     
+    # memvalidasi bahwa transkip file beneran transkip file :)
+    def validate_transkip(self, header_table: list)-> bool:
+
+        valid_header = [
+            [
+                "No.",
+                "Matakuliah",
+                None,
+                "SKS",
+                "Nilai",
+                "Bobot",
+                "Nilai SKS"
+            ],
+            [
+                None,
+                "Kode",
+                "Nama",
+                None,
+                None,
+                None,
+                None
+            ]
+        ]
+
+        if header_table == valid_header:
+            return True
+
+        return False
+
+
     # mengelola data table menjadi bentuk yang sesuai untuk perhitungan score
     def get_nilai_transkip(self, table: list):
 
