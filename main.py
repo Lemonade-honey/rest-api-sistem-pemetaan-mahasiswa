@@ -9,7 +9,8 @@ from starlette.responses import FileResponse
 import joblib
 import requests
 
-from src import CleaningText, KNNClassification, ExtractPdf
+from src import CleaningText, KNNClassification, ExtractPdf, TranskipScores
+from static import StaticMatakuliah
 from model import File
 from request import ValidateType
 
@@ -383,3 +384,36 @@ async def delete_file_transkip(request: Request):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+
+@app.post('/transkip-nilai-scores')
+def transkip_nilai_scores(folder_file_path: str):
+    if not folder_file_path:
+        raise HTTPException(status_code=400, detail="No files provided")
+    
+    # validasi tipe file
+    ValidateType(['.pdf']).validate_data(folder_file_path)
+
+    if not os.path.exists(f"storages/transkip/{folder_file_path}"):
+        raise HTTPException(status_code=404, detail="File target tidak valid atau tidak ditemukan")
+    
+    try:
+
+        extract_table = ExtractPdf().extract_table_transkip(f"storages/transkip/{folder_file_path}")
+
+        extract_table, last_row = ExtractPdf().cleaning_table(extract_table)
+
+        # label scores
+        nilai_transkip = ExtractPdf().get_nilai_transkip(extract_table)
+        nilai_transkip = TranskipScores().fill_empty_labels(TranskipScores().label_transkip_nilai(nilai_transkip))
+
+        # akademik scores
+        akademik_scores = TranskipScores().point_of_transkip_nilai(last_row)
+
+        return {
+            'transkip-label-score' : nilai_transkip,
+            'akademik-scores' : akademik_scores
+        }
+    except Exception as ex:
+        print(ex)
+        return "tidak bisa"
