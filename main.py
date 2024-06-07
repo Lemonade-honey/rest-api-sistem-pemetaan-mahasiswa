@@ -9,7 +9,7 @@ from starlette.responses import FileResponse, Response
 import joblib
 import requests
 
-from src import CleaningText, KNNClassification, ExtractPdf, TranskipScores
+from src import CleaningText, KNNClassification, ExtractPdf, TranskipScores, AchievementTranskip
 from static import StaticMatakuliah
 from model import File
 from request import ValidateType
@@ -409,14 +409,18 @@ def transkip_nilai_scores(folder_file_path: str):
 
         # label scores
         nilai_transkip = ExtractPdf().get_nilai_transkip(extract_table)
-        nilai_transkip = TranskipScores().fill_empty_labels(TranskipScores().label_transkip_nilai(nilai_transkip))
+        transkip_scores = TranskipScores().fill_empty_labels(TranskipScores().label_transkip_nilai(nilai_transkip))
 
         # akademik scores
         akademik_scores = TranskipScores().point_of_transkip_nilai(last_row)
 
+        # badge
+        badge = AchievementTranskip().badge_achievement_transkip(nilai_transkip)
+
         return {
-            'transkip-label-score' : nilai_transkip,
-            'akademik-scores' : akademik_scores
+            'transkip-label-score' : transkip_scores,
+            'akademik-scores' : akademik_scores,
+            'badge' : badge
         }
     
     except Exception as ex:

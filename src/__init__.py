@@ -1,7 +1,7 @@
 from .CleaningText import CleaningText
 from .Classification import KNNClassification
 from .Extract import ExtractPdf
-from .TranskipScores import TranskipScores
+from .Scores import TranskipScores, AchievementTranskip
 from .Support import ArraySupport
 
 lib = [
@@ -9,6 +9,7 @@ lib = [
     "KNNClassification",
     "ExtractPdf",
     "TranskipScores",
-    "ArraySupport"
+    "ArraySupport",
+    "AchievementTranskip"
 ]
 __all__ = lib

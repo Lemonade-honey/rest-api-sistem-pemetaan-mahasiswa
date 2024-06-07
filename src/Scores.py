@@ -36,3 +36,18 @@ class TranskipScores:
                 label_transkip[label] = 0
 
         return label_transkip
+    
+class AchievementTranskip:
+
+    # mendapatkan pencapaina apa saja pada nilai transkip
+    def badge_achievement_transkip(self, transkip_nilai: dict)-> list:
+
+        achievement = list()
+        # ambil keysnya, kode matkulnya saja
+        transkip_kode = set(transkip_nilai.keys())
+
+        for badge, kode in StaticMatakuliah.badge.items():
+            if set(kode).issubset(transkip_kode):
+                achievement.append(badge)
+        
+        return achievement
