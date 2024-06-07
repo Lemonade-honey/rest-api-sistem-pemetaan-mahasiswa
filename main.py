@@ -220,7 +220,45 @@ def classification_dokumen(file_path: str):
             return response
     except requests.exceptions.HTTPError:
         raise HTTPException(status_code=404, detail="file not found")
+
+
+# classification internal
+@app.post("/classification-internal")
+def classification_internal(folder_file_path: str):
+    if not folder_file_path:
+        raise HTTPException(status_code=400, detail="No files provided")
     
+    # validasi tipe file
+    ValidateType(['.pdf']).validate_data(folder_file_path)
+
+    try:
+        # Membaca teks dari dokumen PDF
+        extracted_text = ExtractPdf().extract_pdf_to_text(f"storages/{folder_file_path}", start_page=0, end_page=10)
+
+        # cleaning text dokumen
+        text = CleaningText().remove_all(extracted_text)
+        
+        # loaded model
+        knn_model = joblib.load('knn_classification_model/knn_classification_model.pkl')
+        vectorizer = joblib.load('knn_classification_model/tfidf_fit_transform.pkl')
+
+        knn = KNNClassification(knn_model, vectorizer)
+
+        predicted_label, probabilitas = knn.predict_label(text)
+
+        response = {
+            'data' : {
+                'label-prediksi': knn.label_to_text(predicted_label),
+                'probabilitas': knn.probabilitas_score_labels(probabilitas),
+            }
+        }
+
+        return response
+    
+    except requests.exceptions.HTTPError:
+        raise HTTPException(status_code=404, detail="file not found")
+    
+
 
 # Upload File Dokumen
 @app.post("/upload-file")
