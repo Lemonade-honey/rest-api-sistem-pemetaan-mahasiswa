@@ -2,6 +2,7 @@ from io import BytesIO
 import os
 import random
 import shutil
+import uuid
 from fastapi import FastAPI, HTTPException, File, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import FileResponse
@@ -321,3 +322,57 @@ async def show_document(folder_path: str):
         return FileResponse(f"storages/{folder_path}", media_type='application/pdf')
     else:
         raise HTTPException(status_code=404, detail="Folder Path Tidak ditemukan")
+    
+# upload file transkip
+@app.post('/upload-file-transkip')
+async def upload_file_transkip(file: UploadFile):
+    if file.content_type != "application/pdf":
+        raise HTTPException(status_code=400, detail="File type is not PDF")
+    
+    try:
+        os.makedirs("storages/transkip", exist_ok=True)
+
+        # Generate random folder name
+        folder_name = str(random.randint(1000000, 9999999))
+        folder_path = os.path.join("storages/transkip", folder_name)
+        
+        # Create the folder if it doesn't exist
+        os.makedirs(folder_path, exist_ok=True)
+        
+        # Define file location with the new filename
+        file_extension = os.path.splitext(file.filename)[1]  # get the file extension
+        file_name = str(uuid.uuid4()) + file_extension
+        file_location = os.path.join(folder_path, file_name)
+
+        with open(file_location, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        return f"{folder_name}/{file_name}"
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# revert file filepound
+@app.delete('/revert-file-transkip')
+async def delete_file_transkip(request: Request):
+    if not request:
+        raise HTTPException(status_code=403, detail="id File Path tidak ada")
+    
+    try:
+        body_request = await request.json()
+
+        # mengambil 7 digit awal text
+        body_request = body_request[:7]
+        print(body_request)
+
+        # Periksa apakah folder tersebut ada
+        if os.path.exists(f"storages/transkip/{body_request}"):
+            # Menghapus folder beserta semua isinya
+            shutil.rmtree(f"storages/transkip/{body_request}")
+
+            return True
+        else:
+            raise HTTPException(status_code=400, detail="Folder Path Tidak ditemukan")
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
