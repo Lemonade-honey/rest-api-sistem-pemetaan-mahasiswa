@@ -6,6 +6,8 @@ class StaticMatakuliah:
         "211830641" : "Statistika Informatika", # 3
         "211830431" : "Pemrograman Berorientasi Objek", # 3
 
+        "211840131" : "Analisis dan Perancangan Perangkat Lunak",
+
         "211860831" : "Sistem Informasi Geografis",
         "211860120" : "Manajemen Proyek Teknologi Informasi", # 5
         "211861331" : "Pengembangan Aplikasi Game", # 6
@@ -158,6 +160,22 @@ class StaticMatakuliah:
             "211850531"
         ],
 
+        'cyber computer' :[
+            "211861431",
+            "211850531",
+            "211850131"
+        ],
+
+        'system analys' : [
+            "211840131",
+            "211860120"
+        ],
+
+        'computer vision' : [
+            "211840231",
+            "211861531"
+        ],
+
         'data mining' : [
             "211850831"
         ],
@@ -176,8 +194,17 @@ class StaticMatakuliah:
             "211861131"
         ],
 
+        'machine language' : [
+            "211850420",
+            "211861231"
+        ],
+
         'basic computer knowladge': [
             "211810331",
             "211820430"
-        ]
+        ],
+
+        'game maker' : [
+            "211861331"
+        ],
     }
