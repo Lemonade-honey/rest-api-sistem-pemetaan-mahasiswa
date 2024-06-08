@@ -426,3 +426,19 @@ def transkip_nilai_scores(folder_file_path: str):
     except Exception as ex:
         print(ex)
         raise HTTPException(status_code=506, detail="server error")
+
+@app.delete("/delete-file-document")
+async def delete_file_document(folder: str):
+    if not folder:
+        raise HTTPException(status_code=403, detail="id File Path tidak ada")
+    
+    try:
+       # Periksa apakah folder tersebut ada
+        if os.path.exists(f"storages/document/{folder}"):
+            # Menghapus folder beserta semua isinya
+            shutil.rmtree(f"storages/document/{folder}")
+
+            return True
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
