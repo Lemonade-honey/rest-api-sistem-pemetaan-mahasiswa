@@ -40,14 +40,34 @@ class TranskipScores:
 class AchievementTranskip:
 
     # mendapatkan pencapaina apa saja pada nilai transkip
-    def badge_achievement_transkip(self, transkip_nilai: dict)-> list:
+    def badge_achievement_transkip(self, transkip_nilai: dict)-> dict:
 
-        achievement = list()
+        # mengubah nilai huruf menjadi angka
+        for kode, nilai in transkip_nilai.items():
+            transkip_nilai[kode] = ArraySupport().find_value(StaticMatakuliah.nilai, nilai)
+
+        achievement = dict()
         # ambil keysnya, kode matkulnya saja
         transkip_kode = set(transkip_nilai.keys())
 
         for badge, kode in StaticMatakuliah.badge.items():
             if set(kode).issubset(transkip_kode):
-                achievement.append(badge)
+                
+                # total gabungan nilai untuk tiap badge
+                total_sum = sum(value for key, value in transkip_nilai.items() if key in kode)
+
+                achievement[badge] = self.level_badge_achievement(int((total_sum / len(kode)) * 10))
         
         return achievement
+    
+    # memberikan level pada badge sesuai dengan avg score yang diberikan
+    def level_badge_achievement(self, avg_score: int)-> int:
+        
+        if avg_score >= 90:
+            return 2
+        
+        elif avg_score >= 85 and avg_score < 90:
+            return 1
+        
+        else:
+            return 0
