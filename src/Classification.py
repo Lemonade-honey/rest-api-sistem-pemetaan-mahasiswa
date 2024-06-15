@@ -31,4 +31,4 @@ class KNNClassification:
         # nama kunci untuk tiap indeks
         keys = ["data sain", "progammer", "sistem cerdas", "ui/ux"]
 
-        return {keys[i]: probabilitas[i] * 100 for i in range(len(probabilitas))}
+        return {keys[i]: round(probabilitas[i] * 100) for i in range(len(probabilitas))}
