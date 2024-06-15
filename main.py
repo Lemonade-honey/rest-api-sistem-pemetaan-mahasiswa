@@ -9,7 +9,7 @@ from starlette.responses import FileResponse, Response
 import joblib
 import requests
 
-from src import CleaningText, KNNClassification, ExtractPdf, TranskipScores, AchievementTranskip
+from src import CleaningText, KNNClassification, ExtractPdf, TranskipScores, AchievementTranskip, Summerize, DocumentScores
 from static import StaticMatakuliah
 from model import File
 from request import ValidateType
@@ -231,23 +231,42 @@ def classification_internal(folder_file_path: str):
     
     try:
         # Membaca teks dari dokumen PDF
-        extracted_text = ExtractPdf().extract_pdf_to_text(f"storages/document/{folder_file_path}", start_page=0, end_page=10)
+        extracted_page = ExtractPdf().extract_pdf_to_text(f"storages/document/{folder_file_path}", tipe="page", start_page=0, end_page=50)
 
-        # cleaning text dokumen
-        text = CleaningText().remove_all(extracted_text)
-        
+        # mencari halaman ringkasan atau abstrak
+        ringkasan_page = ExtractPdf().find_target_text_page(extracted_page, target_kata=["abstrak", "pendahuluan"], hindari_kata=["daftar isi", "table of contents", "contents", "kata pengantar", "daftar pustaka", "bab ii"])
+
+        if ringkasan_page and len(ringkasan_page[0]) > 5:
+            ringkasan_page = CleaningText().remove_special(ringkasan_page[0])
+
+            if not any(kata in ringkasan_page.lower() for kata in ['abstrak']):
+                ringkasan_page = Summerize().summarize_text(ringkasan_page)
+
         # loaded model
         knn_model = joblib.load('knn_classification_model/knn_classification_model.pkl')
         vectorizer = joblib.load('knn_classification_model/tfidf_fit_transform.pkl')
 
         knn = KNNClassification(knn_model, vectorizer)
 
-        predicted_label, probabilitas = knn.predict_label(text)
+        bobot = list()
+        for page in extracted_page:
+            summary_page = Summerize().summarize_text(page)
+
+            text_clean = CleaningText().remove_all(summary_page)
+
+            # predict page label
+            predicted_label, probabilitas = knn.predict_label(text_clean)
+
+            if any(value > 0.5 for value in probabilitas):
+                bobot.append(probabilitas)
 
         response = {
             'data' : {
-                'label-prediksi': knn.label_to_text(predicted_label),
-                'probabilitas': knn.probabilitas_score_labels(probabilitas),
+                'classification_scores' : {
+                    'probabilitas': knn.probabilitas_score_labels(DocumentScores().page_scores_avg(bobot)),
+                    'akurasi_score' : round((len(bobot) / len(extracted_page)) * 100),
+                },
+                'ringkasan' : ringkasan_page if ringkasan_page else 'gagal dalam meringkas',
             }
         }
 
