@@ -204,8 +204,6 @@ def classification_dokumen(file_path: str):
             predicted_label, probabilitas = knn.predict_label(text)
 
             response = {
-                'status' : 'sukses',
-                'massage' : 'sukses memprediksi label',
                 'data' : {
                     'label-prediksi': knn.label_to_text(predicted_label),
                     'probabilitas': knn.probabilitas_score_labels(probabilitas),
@@ -214,12 +212,7 @@ def classification_dokumen(file_path: str):
 
             return response
         else:
-            response = {
-                'status' : 'gagal',
-                'massage' : 'gagal dalam ekstrak file dokumen'
-            }
-
-            return response
+            raise HTTPException(status_code=504, detail="file tidak dapat dibaca")
     except requests.exceptions.HTTPError:
         raise HTTPException(status_code=404, detail="file not found")
 
