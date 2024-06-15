@@ -1,5 +1,13 @@
 from .Support import ArraySupport
 from static import StaticMatakuliah
+from statistics import mean
+
+class DocumentScores:
+    # mengembalikan nilai rata rata per page yang telah dibobot
+    def page_scores_avg(self, bobot_page: list):
+        averages_pages = [mean(column) for column in zip(*bobot_page)]
+
+        return averages_pages
 
 class TranskipScores:
 
