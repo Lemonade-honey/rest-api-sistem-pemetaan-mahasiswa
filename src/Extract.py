@@ -32,7 +32,26 @@ class ExtractPdf:
         
         else:
             raise ValueError('tipe: {tipe} tidak valid')
-            
+
+    def find_target_text_page(self, extracted_page: list, target_kata:list, hindari_kata:list = None, page_number:bool = False)-> list | dict | None:
+
+        page_target = dict() if page_number else list()
+
+        for number, page in enumerate(extracted_page):
+
+            page_lower = page.lower()
+
+            if hindari_kata and any(keyword in page_lower for keyword in hindari_kata):
+                continue # lanjut ke bawahnya dengan membawa data hindari
+
+            if any(keyword in page_lower for keyword in target_kata):
+                if page_number:
+                    page_target[number] = page
+                else:
+                    page_target.append(page)
+
+        return page_target
+
     # transkip nilai extract
     def extract_table_transkip(self, file_path: str)-> list:
         with pdfplumber.open(file_path) as pdf:
