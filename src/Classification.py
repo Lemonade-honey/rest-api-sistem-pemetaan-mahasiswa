@@ -17,7 +17,7 @@ class KNNClassification:
     # translate label to text
     def label_to_text(self, label)-> str :
         if label == 0 :
-            return 'data sain'
+            return 'data sains'
         elif label == 1 :
             return 'progammer'
         elif label == 2 :
@@ -29,6 +29,6 @@ class KNNClassification:
         
     def probabilitas_score_labels(self, probabilitas: list)-> dict:
         # nama kunci untuk tiap indeks
-        keys = ["data sain", "progammer", "sistem cerdas", "ui/ux"]
+        keys = ["data sains", "progammer", "sistem cerdas", "ui/ux"]
 
         return {keys[i]: round(probabilitas[i] * 100) for i in range(len(probabilitas))}
