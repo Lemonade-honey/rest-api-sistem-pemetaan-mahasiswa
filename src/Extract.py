@@ -1,19 +1,37 @@
 from pdfminer.high_level import extract_text
 import pdfplumber
+import re
 
 class ExtractPdf:
 
     # extract pdf to text
-    def extract_pdf_to_text(self, path_to_pdf: str, start_page:int = None, end_page:int = None)-> str:
-        if start_page is None and end_page is None:
-            return extract_text(path_to_pdf)
+    def extract_pdf_to_text(self, path_to_pdf: str, tipe:str = "text", start_page:int = None, end_page:int = None)-> str | list:
+
+        if tipe == 'text':
+            if start_page is None and end_page is None:
+                return extract_text(path_to_pdf)
+            
+            else:
+                text_extract = ""
+                for page_number in range(start_page, end_page + 1):
+                    text_extract += extract_text(path_to_pdf, page_numbers=(page_number,))
+
+                return text_extract
+            
+        elif tipe == 'page':
+            page_extract = list()
+            for page_number in range(start_page, end_page + 1):
+                text = extract_text(path_to_pdf, page_numbers=(page_number,))
+                text = re.sub(r'^[ \t\n\r\f\v]+$', '', text, flags=re.MULTILINE)
+                text = re.sub(r'\n+', '\n', text).strip()
+
+                if len(text) > 5 :
+                    page_extract.append(text)
+
+            return page_extract
         
         else:
-            text_extract = ""
-            for page_number in range(start_page, end_page + 1):
-                text_extract += extract_text(path_to_pdf, page_numbers=(page_number,))
-
-            return text_extract
+            raise ValueError('tipe: {tipe} tidak valid')
             
     # transkip nilai extract
     def extract_table_transkip(self, file_path: str)-> list:
