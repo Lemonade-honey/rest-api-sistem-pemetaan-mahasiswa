@@ -53,7 +53,7 @@ class StaticMatakuliah:
             "211861431"
         ],
 
-        "data sain": [
+        "data sains": [
             "211850831",
             "211810531",
             "211820230",
